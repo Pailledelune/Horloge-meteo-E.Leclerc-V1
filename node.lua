@@ -466,24 +466,30 @@ local function meteo_valide()
   return meteo and meteo.maj and os.time() - meteo.maj < METEO_PERIMEE
 end
 
--- Icone et temperature cotes a cote, calees a gauche dans la zone donnee
+-- Icone et temperature cotes a cote, calees a gauche dans la zone donnee.
+-- Le symbole degre est dessine (anneau) : la police ne l'affiche pas sur le Pi.
 local function afficher_meteo(x1, y1, x2, y2)
   if not meteo_valide() or not meteo.temperature then return end
   local dessin = ICONES[meteo.icone] or ICONES.nuageux
-  local temp = string.format("%d°", math.floor(meteo.temperature + 0.5))
+  local temp = string.format("%d", math.floor(meteo.temperature + 0.5))
 
   local h = y2 - y1
   local k = h * 0.95 / 46
   local taille = h * 0.85
   local ecart = h * 0.06
-  local total = 46 * k + ecart + font:width(temp, taille)
+  local total = 46 * k + ecart + font:width(temp, taille) + taille * 0.30
   if total > x2 - x1 then
     local f = (x2 - x1) / total
     k, taille, ecart = k * f, taille * f, ecart * f
   end
   local yc = (y1 + y2) / 2
   dessin(x1 + 23 * k, yc, k)
-  font:write(x1 + 46 * k + ecart, yc - taille / 2, temp, taille, 1, 1, 1, 1)
+
+  local xt = x1 + 46 * k + ecart
+  local yt = yc - taille / 2
+  font:write(xt, yt, temp, taille, 1, 1, 1, 1)
+  local rd = taille * 0.11
+  disque(xt + font:width(temp, taille) + taille * 0.04 + rd, yt + taille * 0.22, rd, BLANC, {0, 0, 0.55})
 end
 
 ------------------------------------------------------------------------
